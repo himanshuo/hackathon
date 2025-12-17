@@ -1,4 +1,5 @@
 import asyncio
+from base64 import urlsafe_b64decode
 from oagi import TaskerAgent, AsyncPyautoguiActionHandler, AsyncScreenshotMaker
 from datetime import date, timedelta
 from google import genai
@@ -23,19 +24,7 @@ def call_gemini(query):
 
 
 
-# items_to_buy = call_gemini("Plan an itinerary for a trip to Tokyo, Japan from December 16th to December 20th. For each item in the itinerary that requires a purchase, figure out the url to figure out the purchase details. The output is a list of purchase items and a url to get the purchase cost. Provide nothing but the purchase item, description, and url as output.")
-
-items_to_buy = """
-Here is a list of purchase items, their descriptions, and URLs to find purchase details for your trip to Tokyo from December 16th to December 20th:
-
-*   **Purchase Item:** Accommodation in Tokyo
-    *   **Description:** Hotel stay for 4 nights (December 16th - December 20th) in Tokyo.
-    *   **URL to Purchase Details:** https://www.kayak.ie/hotels/Tokyo,Japan-p22200/2025-12-19/2025-12-20/2adults;map?ucs=1ickdw7&sort=rank_a
-
-*   **Purchase Item:** Train Tickets
-    *   Description: Round-trip express train ticket from Narita International Airport (NRT) to Shibuya.
-    *   URL: https://japantravel.navitime.com/en/area/jp/route/calculator/?from=header-dropdown
-"""
+items_to_buy = call_gemini("Plan an itinerary for a trip to Tokyo, Japan from December 16th to December 20th. For each item in the itinerary that requires a purchase, figure out the url to figure out the purchase details. The output is a list of purchase items and a url to get the purchase cost. Provide nothing but the purchase item, description, and url as output.")
 
 async def run_tasker():
     agent = TaskerAgent(model="lux-actor-1")
@@ -49,7 +38,7 @@ async def run_tasker():
         task=f"Figure out the cost of a trip to {city}",
         todos=[
           "There is a text editor open a file called total_cost.rtf.",
-          f"For each purchase item listed in the `items_to_buy` string, extract the 'Purchase Item' name and the 'URL to Purchase Details'.",
+          f"Parse the following string to extract 'Purchase Item' names and their corresponding 'URL to Purchase Details': {items_to_buy}",
           f"For each extracted URL, navigate to that URL using a web browser.",
           f"On each webpage, identify the numerical cost associated with the 'Purchase Item'.",
           f"Write the 'Purchase Item' name and its identified cost to the file total_cost.rtf.",
